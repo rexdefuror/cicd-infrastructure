@@ -66,7 +66,67 @@ jobs:
             console.log('cicdProject2: ' + cicdProject2);
             console.log('cicdProject1Version: ' + cicdProject1Version);
             console.log('cicdProject2Version: ' + cicdProject2Version);
-            core.exportVariable('cicd-project-1', cicdProject1);
-            core.exportVariable('cicd-project-2', cicdProject2);
-            core.exportVariable('cicd-project-1-version', cicdProject1Version);
-            core.exportVariable('cicd-project-2-version', cicdProject2Version);
+            core.exportVariable('cicd_project_1', cicdProject1);
+            core.exportVariable('cicd_project_2', cicdProject2);
+            core.exportVariable('cicd_project_1_version', cicdProject1Version);
+            core.exportVariable('cicd_project_2_version', cicdProject2Version);
+      ## if cicd_project_1 is true, deploy cicd-project-1 to staging
+      ## download cicd-project-1 artifact from it's repository cicd-project-1 on version cicd_project_1_version
+      - name: Download cicd-project-1 artifact
+        id: download_cicd_project_1
+        if: env.cicd_project_1 == 'true'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
+          name: cicd-project-1_v${{ env.cicd_project_1_version }}
+          path: cicd-project-1
+          repo: rexdefuror/cicd-project-1
+          search_artifacts: true
+          if_no_artifact_found: fail
+      - name: Deploy cicd-project-1 to staging
+        if: env.cicd_project_1 == 'true'
+        run: |
+          echo "Deploy cicd-project-1 version ${{ env.cicd_project_1_version }} to staging"
+      ## if cicd_project_2 is true, deploy cicd-project-2 to staging
+      - name: Download cicd-project-2 artifact
+        id: download_cicd_project_2
+        if: env.cicd_project_2 == 'true'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
+          name: cicd-project-2_v${{ env.cicd_project_2_version }}
+          path: cicd-project-2
+          repo: rexdefuror/cicd-project-2
+          search_artifacts: true
+          if_no_artifact_found: fail
+      - name: Deploy cicd-project-2 to staging
+        if: env.cicd_project_2 == 'true'
+        run: |
+          echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to staging"
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: rexdefuror
+          minimum-approvals: 1
+          issue-title: "Approve production for cicd-project-1 ${{ env.cicd_project_1_version }} and cicd-project-2 ${{env.cicd_project_2_version }}"
+          exclude-workflow-initiator-as-approver: false
+          issue-body: "Approve production for cicd-project-1 ${{ env.cicd_project_1_version }} and cicd-project-2 ${{env.cicd_project_2_version }}"
+  deploy-to-prod:
+    name: Deploy to prod
+    runs-on: ubuntu-latest
+    needs: deploy-to-staging
+    steps:
+      ## if cicd_project_1 is true, deploy cicd-project-1 to prod
+      - name: Deploy cicd-project-1 to prod
+        if: env.cicd_project_1 == 'true'
+        run: |
+          echo "Deploy cicd-project-1 version ${{ env.cicd_project_1_version }} to prod"
+      ## if cicd_project_2 is true, deploy cicd-project-2 to prod
+      - name: Deploy cicd-project-2 to prod
+        if: env.cicd_project_2 == 'true'
+        run: |
+          echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to prod"
