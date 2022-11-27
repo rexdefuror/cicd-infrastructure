@@ -51,9 +51,21 @@ jobs:
         uses: tdemin/find-latest-tag@v1
         with:
           repo: https://github.com/rexdefuror/cicd-project-1.git
+      ## set cicd-project-1-version environment variable to latest tag if version is latest and substring the v from the tag
       - name: Set cicd-project-1 version
         if: env.cicd-project-1 == 'true' && env.cicd-project-1-version == 'latest'
-        run: echo "cicd-project-1-version=${{ steps.get_cicd-project-1_version.outputs.tag }}"
+        run: echo "cicd-project-1-version=${{ steps.get_cicd-project-1_version.outputs.tag }}" | sed 's/v//' >> $GITHUB_ENV
+      ## if version is latest, get last tag from cicd-project-2 repository
+      - name: Get cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        id: get_cicd-project-2_version
+        uses: tdemin/find-latest-tag@v1
+        with:
+          repo: https://github.com/rexdefuror/cicd-project-2.git
+      ## set cicd-project-2-version environment variable to latest tag if version is latest and substring the v from the tag
+      - name: Set cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        run: echo "cicd-project-2-version=${{ steps.get_cicd-project-2_version.outputs.tag }}" | sed 's/v//' >> $GITHUB_ENV
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
         id: download_cicd-project-1
