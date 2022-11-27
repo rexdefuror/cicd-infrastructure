@@ -225,7 +225,7 @@ jobs:
         if: env.cicd_project_2 == 'true'
         uses: actions/github-script@v6
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{secrets.RELEASE_TOKEN}}
           script: |
             const cicdProject2Version = "v" + process.env.cicd_project_2_version;
             const cicdProject2Release = await github.rest.repos.createRelease({
