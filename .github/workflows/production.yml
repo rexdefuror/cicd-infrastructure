@@ -184,10 +184,23 @@ jobs:
           repo: rexdefuror/cicd-project-1
           search_artifacts: true
           if_no_artifact_found: fail
-      - name: Deploy cicd-project-1 to staging
+      - name: Deploy cicd-project-1 to production
         if: env.cicd_project_1 == 'true'
         run: |
           echo "Deploy cicd-project-1 version ${{ env.cicd_project_1_version }} to production"
+      ## if cicd_project_1 is true, create cicd-project-1 release on version cicd_project_1_version
+      - name: Create cicd-project-1 release
+        if: env.cicd_project_1 == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: cicd-project-1/cicd-project-1_v${{ env.cicd_project_1_version }}.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: cicd-project-1_v${{ env.cicd_project_1_version }}
+          tag: v${{ env.cicd_project_1_version }}
+          body: cicd-project-1_v${{ env.cicd_project_1_version }}
+          repo: rexdefuror/cicd-project-1
+          draft: false
+          prerelease: false
       ## if cicd_project_2 is true, deploy cicd-project-2 to staging
       - name: Download cicd-project-2 artifact
         id: download_cicd_project_2
@@ -202,7 +215,20 @@ jobs:
           repo: rexdefuror/cicd-project-2
           search_artifacts: true
           if_no_artifact_found: fail
-      - name: Deploy cicd-project-2 to staging
+      - name: Deploy cicd-project-2 to production
         if: env.cicd_project_2 == 'true'
         run: |
           echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to production"
+      ## if cicd_project_2 is true, create cicd-project-2 release on version cicd_project_2_version
+      - name: Create cicd-project-2 release
+        if: env.cicd_project_2 == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: cicd-project-2/cicd-project-2_v${{ env.cicd_project_2_version }}.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: cicd-project-2_v${{ env.cicd_project_2_version }}
+          tag: v${{ env.cicd_project_2_version }}
+          body: cicd-project-2_v${{ env.cicd_project_2_version }}
+          repo: rexdefuror/cicd-project-2
+          draft: false
+          prerelease: false
