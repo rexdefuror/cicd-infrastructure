@@ -123,7 +123,7 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: rexdefuror
           minimum-approvals: 1
-          issue-title: "Approve deploy to qa for cicd-project-1 - v${{ env.cicd-project-1-version }} and cicd-project-2 - v${{ github.event.inputs.cicd-project-2-version }}"
+          issue-title: "Approve deploy to qa for cicd-project-1 - v${{ env.cicd-project-1-version }} and cicd-project-2 - v${{ env.cicd-project-2-version }}"
           exclude-workflow-initiator-as-approver: false
   deploy-to-qa:
     name: Deploy to QA
@@ -204,7 +204,7 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: rexdefuror
           minimum-approvals: 1
-          issue-title: "Approve release candidate with versions - cicd-project-1 ${{ env.cicd-project-1-version }} and cicd-project-2 ${{ github.event.inputs.cicd-project-2-version }}"
+          issue-title: "Approve release candidate with versions - cicd-project-1 ${{ env.cicd-project-1-version }} and cicd-project-2 ${{env.cicd-project-2-version }}"
           exclude-workflow-initiator-as-approver: false
   create-release-candidate:
     name: Create release candidate
@@ -213,10 +213,41 @@ jobs:
     ## create a json file with the versions of the projects that are included in the release and upload it as an artifact
     ## file name should contain run number
     steps:
+      - name: Get cicd-project-1 version
+        if: env.cicd-project-1 == 'true' && env.cicd-project-1-version == 'latest'
+        id: get_cicd-project-1_version
+        uses: tdemin/find-latest-tag@v1
+        with:
+          repo: https://github.com/rexdefuror/cicd-project-1.git
+      ## substring the v from the tag and then set cicd-project-1-version environment variable to latest tag if version is latest
+      - name: Set cicd-project-1 version
+        if: env.cicd-project-1 == 'true' && env.cicd-project-1-version == 'latest'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const cicdProject1_version = '${{ steps.get_cicd-project-1_version.outputs.tag }}'
+            const cicdProject1_version_substring = cicdProject1_version.substring(1)
+            core.exportVariable('cicd-project-1-version', cicdProject1_version_substring)
+      ## if version is latest, get last tag from cicd-project-2 repository
+      - name: Get cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        id: get_cicd-project-2_version
+        uses: tdemin/find-latest-tag@v1
+        with:
+          repo: https://github.com/rexdefuror/cicd-project-2.git
+      ## substring the v from the tag and then set cicd-project-1-version environment variable to latest tag if version is latest
+      - name: Set cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const cicdProject2_version = '${{ steps.get_cicd-project-2_version.outputs.tag }}'
+            const cicdProject2_version_substring = cicdProject2_version.substring(1)
+            core.exportVariable('cicd-project-2-version', cicdProject2_version_substring)
       - name: Create release candidate json file
         id: create_release_candidate_json
         run: |
-          echo '{"cicd_project_1": ${{ env.cicd-project-1 }}, "cicd_project_2": ${{ env.cicd-project-2 }}, "cicd_project_1_version": ${{ env.cicd-project-1-version }}, "cicd_project_2_version": ${{ env.cicd-project-2-version }}}' > release-candidate.json
+          echo '{"cicd_project_1": ${{ env.cicd-project-1 }}, "cicd_project_2": ${{ env.cicd-project-2 }}, "cicd_project_1_version": "${{ env.cicd-project-1-version }}", "cicd_project_2_version": "${{ env.cicd-project-2-version }}"}' > release-candidate.json
       - name: Upload release candidate json file
         uses: actions/upload-artifact@v3
         with:
