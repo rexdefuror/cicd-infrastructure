@@ -9,9 +9,9 @@ on:
         default: false
         type: boolean
       cicd-project-1-version:
-        description: "cicd-project-1 version"
+        description: "cicd-project-1 version (latest, #.#.#)"
         required: false
-        default: "0.0.0"
+        default: "latest"
         type: string
       cicd-project-2:
         description: "Include cicd-project-2?"
@@ -19,9 +19,9 @@ on:
         default: false
         type: boolean
       cicd-project-2-version:
-        description: "cicd-project-2 version"
+        description: "cicd-project-2 version (latest, #.#.#)"
         required: false
-        default: "0.0.0"
+        default: "latest"
         type: string
 
 jobs:
@@ -41,9 +41,10 @@ jobs:
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
         id: download_cicd-project-1
-        if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' && github.event.inputs.cicd-project-1-version != 'latest' }}
         uses: dawidd6/action-download-artifact@v2
         with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
           workflow_conclusion: success
           name: cicd-project-1_v${{ github.event.inputs.cicd-project-1-version }}
@@ -51,14 +52,29 @@ jobs:
           repo: rexdefuror/cicd-project-1
           branch: main
           search_artifacts: true
-          check_artifacts: true
           if_no_artifact_found: fail
+      - name: Download latest cicd-project-1 artifact
+        id: download_cicd-project-1
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' && github.event.inputs.cicd-project-1-version == 'latest' }}
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
+          path: cicd-project-1
+          repo: rexdefuror/cicd-project-1
+          branch: main
+          if_no_artifact_found: fail
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: cicd-project-1
       ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
       - name: Download cicd-project-2 artifact
         id: download_cicd-project-2
         if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
         uses: dawidd6/action-download-artifact@v2
         with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
           workflow_conclusion: success
           name: cicd-project-2_v${{ github.event.inputs.cicd-project-2-version }}
@@ -92,18 +108,34 @@ jobs:
     steps:
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
+        id: download_cicd-project-1
         if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
           name: cicd-project-1_v${{ github.event.inputs.cicd-project-1-version }}
           path: cicd-project-1
+          repo: rexdefuror/cicd-project-1
+          branch: main
+          search_artifacts: true
+          if_no_artifact_found: fail
       ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
       - name: Download cicd-project-2 artifact
+        id: download_cicd-project-2
         if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
           name: cicd-project-2_v${{ github.event.inputs.cicd-project-2-version }}
           path: cicd-project-2
+          repo: rexdefuror/cicd-project-2
+          branch: main
+          search_artifacts: true
+          if_no_artifact_found: fail
       ## if cicd-project-1 is included in the release, deploy cicd-project-1 to qa
       - name: Deploy cicd-project-1 to qa
         if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
