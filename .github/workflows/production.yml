@@ -197,7 +197,7 @@ jobs:
             const cicdProject1Version = "v" + process.env.cicd_project_1_version;
             const cicdProject1Release = await github.rest.repos.createRelease({
               owner: context.repo.owner,
-              repo: 'cicd-project-1',
+              repo: 'rexdefuror/cicd-project-1',
               tag_name: cicdProject1Version,
               name: cicdProject1Version,
               body: 'Release cicd-project-1 version ' + cicdProject1Version
@@ -230,7 +230,7 @@ jobs:
             const cicdProject2Version = "v" + process.env.cicd_project_2_version;
             const cicdProject2Release = await github.rest.repos.createRelease({
               owner: context.repo.owner,
-              repo: 'cicd-project-2',
+              repo: 'rexdefuror/cicd-project-2',
               tag_name: cicdProject2Version,
               name: cicdProject2Version,
               body: 'Release cicd-project-2 version ' + cicdProject2Version
