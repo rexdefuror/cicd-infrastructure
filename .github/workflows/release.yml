@@ -1,0 +1,100 @@
+name: Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      cicd-project-1:
+        description: "Include cicd-project-1?"
+        required: true
+        default: false
+        type: boolean
+      cicd-project-1-version:
+        description: "cicd-project-1 version"
+        required: false
+        default: "0.0.0"
+        type: string
+      cicd-project-2:
+        description: "Include cicd-project-2?"
+        required: true
+        default: false
+        type: boolean
+      cicd-project-2-version:
+        description: "cicd-project-2 version"
+        required: false
+        default: "0.0.0"
+        type: string
+
+jobs:
+  ## there are total of two environments to deploy to (dev, qa)
+  ## each environment has two projects to deploy (cicd-project-1, cicd-project-2)
+  ## cicd-project-1 and cicd-project-2 are first deployed to dev, then if manual approval is given, they are deployed to qa
+  ## cicd-project-1 and cicd-project-2 are deployed to dev and qa in parallel
+  ## to deploy the projects, cicd-project-1 and cicd-project-2 are downloaded from the artifacts of cicd-project-1 and cicd-project-2
+  ## if cicd-project-1 and cicd-project-2 are not included in the release, they are not deployed
+  ## cicd-project-1 is located in cicd-project-1 repository
+  ## cicd-project-2 is located in cicd-project-2 repository
+
+  deploy-to-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    steps:
+      ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
+      - name: Download cicd-project-1 artifact
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: cicd-project-1_v${{ github.event.inputs.cicd-project-1-version }}
+          path: cicd-project-1
+      ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
+      - name: Download cicd-project-2 artifact
+        if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: cicd-project-2_v${{ github.event.inputs.cicd-project-2-version }}
+          path: cicd-project-2
+      ## if cicd-project-1 is included in the release, deploy cicd-project-1 to dev
+      - name: Deploy cicd-project-1 to dev
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
+        run: |
+          echo "Deploying cicd-project-1 to dev"
+      ## if cicd-project-2 is included in the release, deploy cicd-project-2 to dev
+      - name: Deploy cicd-project-2 to dev
+        if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
+        run: |
+          echo "Deploying cicd-project-2 to dev"
+      ## await manual approval to deploy to qa
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: rexdefuror
+          minimum-approvals: 1
+          issue-title: "Approve deploy to qa for cicd-project-1 - v${{ github.event.inputs.cicd-project-1-version }} and cicd-project-2 - v${{ github.event.inputs.cicd-project-2-version }}"
+          exclude-workflow-initiator-as-approver: false
+  deploy-to-qa:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    steps:
+      ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
+      - name: Download cicd-project-1 artifact
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: cicd-project-1_v${{ github.event.inputs.cicd-project-1-version }}
+          path: cicd-project-1
+      ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
+      - name: Download cicd-project-2 artifact
+        if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: cicd-project-2_v${{ github.event.inputs.cicd-project-2-version }}
+          path: cicd-project-2
+      ## if cicd-project-1 is included in the release, deploy cicd-project-1 to qa
+      - name: Deploy cicd-project-1 to qa
+        if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
+        run: |
+          echo "Deploying cicd-project-1 to qa"
+      ## if cicd-project-2 is included in the release, deploy cicd-project-2 to qa
+      - name: Deploy cicd-project-2 to qa
+        if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
+        run: |
+          echo "Deploying cicd-project-2 to qa"
