@@ -132,6 +132,37 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-to-dev
     steps:
+      - name: Get cicd-project-1 version
+        if: env.cicd-project-1 == 'true' && env.cicd-project-1-version == 'latest'
+        id: get_cicd-project-1_version
+        uses: tdemin/find-latest-tag@v1
+        with:
+          repo: https://github.com/rexdefuror/cicd-project-1.git
+      ## substring the v from the tag and then set cicd-project-1-version environment variable to latest tag if version is latest
+      - name: Set cicd-project-1 version
+        if: env.cicd-project-1 == 'true' && env.cicd-project-1-version == 'latest'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const cicdProject1_version = '${{ steps.get_cicd-project-1_version.outputs.tag }}'
+            const cicdProject1_version_substring = cicdProject1_version.substring(1)
+            core.exportVariable('cicd-project-1-version', cicdProject1_version_substring)
+      ## if version is latest, get last tag from cicd-project-2 repository
+      - name: Get cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        id: get_cicd-project-2_version
+        uses: tdemin/find-latest-tag@v1
+        with:
+          repo: https://github.com/rexdefuror/cicd-project-2.git
+      ## substring the v from the tag and then set cicd-project-1-version environment variable to latest tag if version is latest
+      - name: Set cicd-project-2 version
+        if: env.cicd-project-2 == 'true' && env.cicd-project-2-version == 'latest'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const cicdProject2_version = '${{ steps.get_cicd-project-2_version.outputs.tag }}'
+            const cicdProject2_version_substring = cicdProject2_version.substring(1)
+            core.exportVariable('cicd-project-2-version', cicdProject2_version_substring)
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
         id: download_cicd-project-1
