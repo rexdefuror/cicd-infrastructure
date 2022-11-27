@@ -58,3 +58,10 @@ jobs:
           echo "cicd_project_2=$(jq -r '.cicd_project_2' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
           echo "cicd_project_1_version=$(jq -r '.cicd_project_1_version' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
           echo "cicd_project_2_version=$(jq -r '.cicd_project_2_version' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
+      - name: Log environment variables
+        run: |
+          echo "RC_RUN_NUMBER=${{ env.RC_RUN_NUMBER }}"
+          echo "cicd_project_1=${{ env.cicd_project_1 }}"
+          echo "cicd_project_2=${{ env.cicd_project_2 }}"
+          echo "cicd_project_1_version=${{ env.cicd_project_1_version }}"
+          echo "cicd_project_2_version=${{ env.cicd_project_2_version }}"
