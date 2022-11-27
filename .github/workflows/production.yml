@@ -48,7 +48,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: release.yml
-          run_id: ${{ env.RC_RUN_NUMBER }}
+          run_number: ${{ env.RC_RUN_NUMBER }}
           name: release-candidate-${{ env.RC_RUN_NUMBER }}
           path: ./release-candidate-${{ env.RC_RUN_NUMBER }}
       - name: Unpack release-candidate.json from artifact
