@@ -74,7 +74,7 @@ jobs:
         with:
           script: |
             const cicdProject2_version = '${{ steps.get_cicd-project-2_version.outputs.tag }}'
-            const cicdProject2_version_substring = cicd-project-cicdProject2_version.substring(1)
+            const cicdProject2_version_substring = cicdProject2_version.substring(1)
             core.exportVariable('cicd-project-2-version', cicdProject2_version_substring)
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
