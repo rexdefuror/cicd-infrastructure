@@ -51,9 +51,8 @@ jobs:
           run_number: ${{ env.RC_RUN_NUMBER }}
           name: release-candidate-${{ env.RC_RUN_NUMBER }}
           path: ./release-candidate-${{ env.RC_RUN_NUMBER }}
-      - name: Unpack release-candidate.json from artifact
-        run: |
-          tar -xvf ./release-candidate/release-candidate-${{ env.RC_RUN_NUMBER }}.tar.gz
+      - name: Unzip release-candidate.json from artifact
+        run: unzip ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate-${{ env.RC_RUN_NUMBER }}.zip -d ./release-candidate-${{ env.RC_RUN_NUMBER }}
       ## set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
       - name: Set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
         run: |
