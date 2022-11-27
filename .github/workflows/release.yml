@@ -51,6 +51,7 @@ jobs:
           repo: rexdefuror/cicd-project-1
           branch: main
           search_artifacts: true
+          check_artifacts: true
           if_no_artifact_found: fail
       ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
       - name: Download cicd-project-2 artifact
@@ -87,6 +88,7 @@ jobs:
   deploy-to-qa:
     name: Deploy to QA
     runs-on: ubuntu-latest
+    needs: deploy-to-dev
     steps:
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
