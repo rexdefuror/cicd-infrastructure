@@ -1,0 +1,54 @@
+name: Production Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      rc-run-number:
+        description: "Release candidate run number"
+        required: true
+        default: "latest"
+
+env:
+  RC_RUN_NUMBER: ${{ github.event.inputs.rc-run-number }}
+  cicd_project_1: false
+  cicd_project_1_version: latest
+  cicd_project_2: false
+  cicd_project_2_version: latest
+
+jobs:
+  deploy-to-staging:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    steps:
+      ## if RC_RUN_NUMBER is latest, get latest run number for release.yml
+      - name: Get latest run number for release.yml
+        if: env.RC_RUN_NUMBER == 'latest'
+        id: get_latest_run_number
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const workflow = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'release.yml',
+              branch: 'main',
+              status: 'success',
+              per_page: 1
+            })
+            const latestRunNumber = workflow.data.workflow_runs[0].run_number
+            return latestRunNumber
+      ## if RC_RUN_NUMBER is latest, set RC_RUN_NUMBER to latest run number for release.yml
+      - name: Set RC_RUN_NUMBER to latest run number for release.yml
+        if: env.RC_RUN_NUMBER == 'latest'
+        run: |
+          echo "RC_RUN_NUMBER=${{ steps.get_latest_run_number.outputs.result }}" >> $GITHUB_ENV
+      ## download artifact from RC_RUN_NUMBER, extract cicd-project-1 and cicd-project-2 checks and versions and set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version
+      ## artifact name is release-candidate-${{ env.RC_RUN_NUMBER }} and path is release-candidate.json
+      - name: Download artifact from RC_RUN_NUMBER
+        uses: actions/download-artifact@v3
+        with:
+          name: release-candidate-${{ env.RC_RUN_NUMBER }}
+          path: release-candidate.json
+      - name: log release-candidate.json
+        run: |
+          cat release-candidate.json

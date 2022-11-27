@@ -199,3 +199,26 @@ jobs:
         if: ${{ env.cicd-project-2 == 'true' }}
         run: |
           echo "Deploying cicd-project-2 to qa"
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: rexdefuror
+          minimum-approvals: 1
+          issue-title: "Approve release candidate with versions - cicd-project-1 ${{ env.cicd-project-1-version }} and cicd-project-2 ${{ github.event.inputs.cicd-project-2-version }}"
+          exclude-workflow-initiator-as-approver: false
+  create-release-candidate:
+    name: Create release candidate
+    runs-on: ubuntu-latest
+    needs: deploy-to-qa
+    ## create a json file with the versions of the projects that are included in the release and upload it as an artifact
+    ## file name should contain run number
+    steps:
+      - name: Create release candidate json file
+        id: create_release_candidate_json
+        run: |
+          echo '{"cicd-project-1": "${{ env.cicd-project-1-version }}", "cicd-project-2": "${{ env.cicd-project-2-version }}"}' > release-candidate.json
+      - name: Upload release candidate json file
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-candidate-${{ github.run_number }}
+          path: release-candidate.json
