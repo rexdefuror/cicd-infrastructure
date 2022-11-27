@@ -120,13 +120,89 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-to-staging
     steps:
-      ## if cicd_project_1 is true, deploy cicd-project-1 to prod
-      - name: Deploy cicd-project-1 to prod
+      - name: Get latest run number for release.yml
+        if: env.RC_RUN_NUMBER == 'latest'
+        id: get_latest_run_number
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const workflow = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'release.yml',
+              branch: 'main',
+              status: 'success',
+              per_page: 1
+            })
+            const latestRunNumber = workflow.data.workflow_runs[0].run_number
+            return latestRunNumber
+      ## if RC_RUN_NUMBER is latest, set RC_RUN_NUMBER to latest run number for release.yml
+      - name: Set RC_RUN_NUMBER to latest run number for release.yml
+        if: env.RC_RUN_NUMBER == 'latest'
+        run: |
+          echo "RC_RUN_NUMBER=${{ steps.get_latest_run_number.outputs.result }}" >> $GITHUB_ENV
+      ## download artifact from RC_RUN_NUMBER, extract cicd-project-1 and cicd-project-2 checks and versions and set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version
+      ## artifact name is release-candidate-${{ env.RC_RUN_NUMBER }} and unpack release-candidate.json from artifact
+      - name: Download artifact from RC_RUN_NUMBER
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: release.yml
+          run_number: ${{ env.RC_RUN_NUMBER }}
+          name: release-candidate-${{ env.RC_RUN_NUMBER }}
+          path: ./release-candidate-${{ env.RC_RUN_NUMBER }}
+      ## set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
+      - name: Parse release-candidate.json
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const releaseCandidate = JSON.parse(fs.readFileSync('./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json', 'utf8'));
+            const cicdProject1 = releaseCandidate.cicd_project_1;
+            const cicdProject2 = releaseCandidate.cicd_project_2;
+            const cicdProject1Version = releaseCandidate.cicd_project_1_version;
+            const cicdProject2Version = releaseCandidate.cicd_project_2_version;
+            console.log('cicdProject1: ' + cicdProject1);
+            console.log('cicdProject2: ' + cicdProject2);
+            console.log('cicdProject1Version: ' + cicdProject1Version);
+            console.log('cicdProject2Version: ' + cicdProject2Version);
+            core.exportVariable('cicd_project_1', cicdProject1);
+            core.exportVariable('cicd_project_2', cicdProject2);
+            core.exportVariable('cicd_project_1_version', cicdProject1Version);
+            core.exportVariable('cicd_project_2_version', cicdProject2Version);
+      ## if cicd_project_1 is true, deploy cicd-project-1 to staging
+      ## download cicd-project-1 artifact from it's repository cicd-project-1 on version cicd_project_1_version
+      - name: Download cicd-project-1 artifact
+        id: download_cicd_project_1
+        if: env.cicd_project_1 == 'true'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
+          name: cicd-project-1_v${{ env.cicd_project_1_version }}
+          path: cicd-project-1
+          repo: rexdefuror/cicd-project-1
+          search_artifacts: true
+          if_no_artifact_found: fail
+      - name: Deploy cicd-project-1 to staging
         if: env.cicd_project_1 == 'true'
         run: |
-          echo "Deploy cicd-project-1 version ${{ env.cicd_project_1_version }} to prod"
-      ## if cicd_project_2 is true, deploy cicd-project-2 to prod
-      - name: Deploy cicd-project-2 to prod
+          echo "Deploy cicd-project-1 version ${{ env.cicd_project_1_version }} to production"
+      ## if cicd_project_2 is true, deploy cicd-project-2 to staging
+      - name: Download cicd-project-2 artifact
+        id: download_cicd_project_2
+        if: env.cicd_project_2 == 'true'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          workflow_conclusion: success
+          name: cicd-project-2_v${{ env.cicd_project_2_version }}
+          path: cicd-project-2
+          repo: rexdefuror/cicd-project-2
+          search_artifacts: true
+          if_no_artifact_found: fail
+      - name: Deploy cicd-project-2 to staging
         if: env.cicd_project_2 == 'true'
         run: |
-          echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to prod"
+          echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to production"
