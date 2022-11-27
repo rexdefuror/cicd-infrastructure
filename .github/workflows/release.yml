@@ -216,7 +216,7 @@ jobs:
       - name: Create release candidate json file
         id: create_release_candidate_json
         run: |
-          echo '{"cicd-project-1": "${{ env.cicd-project-1-version }}", "cicd-project-2": "${{ env.cicd-project-2-version }}"}' > release-candidate.json
+          echo '{"cicd_project_1": ${{ env.cicd-project-1 }}, "cicd_project_2": ${{ env.cicd-project-2 }}, "cicd_project_1_version": ${{ env.cicd-project-1-version }}, "cicd_project_2_version": ${{ env.cicd-project-2-version }}}' > release-candidate.json
       - name: Upload release candidate json file
         uses: actions/upload-artifact@v3
         with:
