@@ -40,18 +40,30 @@ jobs:
     steps:
       ## if cicd-project-1 is included in the release, download cicd-project-1 artifact from cicd-project-1 repository
       - name: Download cicd-project-1 artifact
+        id: download_cicd-project-1
         if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: build.yml
+          workflow_conclusion: success
           name: cicd-project-1_v${{ github.event.inputs.cicd-project-1-version }}
           path: cicd-project-1
+          repo: rexdefuror/cicd-project-1
+          branch: main
+          if_no_artifact_found: fail
       ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
       - name: Download cicd-project-2 artifact
+        id: download_cicd-project-2
         if: ${{ github.event.inputs.cicd-project-2 == 'true' }}
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: build.yml
+          workflow_conclusion: success
           name: cicd-project-2_v${{ github.event.inputs.cicd-project-2-version }}
           path: cicd-project-2
+          repo: rexdefuror/cicd-project-2
+          branch: main
+          if_no_artifact_found: fail
       ## if cicd-project-1 is included in the release, deploy cicd-project-1 to dev
       - name: Deploy cicd-project-1 to dev
         if: ${{ github.event.inputs.cicd-project-1 == 'true' }}
