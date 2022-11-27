@@ -53,11 +53,32 @@ jobs:
           path: ./release-candidate-${{ env.RC_RUN_NUMBER }}
       ## set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
       - name: Set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const releaseCandidate = JSON.parse(fs.readFileSync('./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json', 'utf8'));
+            const cicdProject1 = releaseCandidate.cicd_project_1;
+            const cicdProject2 = releaseCandidate.cicd_project_2;
+            const cicdProject1Version = cicdProject1 ? cicdProject1.version : 'latest';
+            const cicdProject2Version = cicdProject2 ? cicdProject2.version : 'latest';
+            console.log('cicdProject1: ' + cicdProject1);
+            console.log('cicdProject2: ' + cicdProject2);
+            console.log('cicdProject1Version: ' + cicdProject1Version);
+            console.log('cicdProject2Version: ' + cicdProject2Version);
+            return {
+              cicdProject1: cicdProject1,
+              cicdProject2: cicdProject2,
+              cicdProject1Version: cicdProject1Version,
+              cicdProject2Version: cicdProject2Version
+            }
+      ## set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version
+      - name: Assign environment variables
         run: |
-          echo "cicd_project_1=$(jq -r '.cicd_project_1' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
-          echo "cicd_project_2=$(jq -r '.cicd_project_2' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
-          echo "cicd_project_1_version=$(jq -r '.cicd_project_1_version' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
-          echo "cicd_project_2_version=$(jq -r '.cicd_project_2_version' ./release-candidate-${{ env.RC_RUN_NUMBER }}/release-candidate.json)" >> $GITHUB_ENV
+          echo "cicd_project_1=${{ steps.set-cicd-project-1-cicd-project-2-cicd-project-1-version-and-cicd-project-2-version-from-release-candidate-json.outputs.cicdProject1 }}" >> $GITHUB_ENV
+          echo "cicd_project_2=${{ steps.set-cicd-project-1-cicd-project-2-cicd-project-1-version-and-cicd-project-2-version-from-release-candidate-json.outputs.cicdProject2 }}" >> $GITHUB_ENV
+          echo "cicd_project_1_version=${{ steps.set-cicd-project-1-cicd-project-2-cicd-project-1-version-and-cicd-project-2-version-from-release-candidate-json.outputs.cicdProject1Version }}" >> $GITHUB_ENV
+          echo "cicd_project_2_version=${{ steps.set-cicd-project-1-cicd-project-2-cicd-project-1-version-and-cicd-project-2-version-from-release-candidate-json.outputs.cicdProject2Version }}" >> $GITHUB_ENV
       - name: Log environment variables
         run: |
           echo "RC_RUN_NUMBER=${{ env.RC_RUN_NUMBER }}"
