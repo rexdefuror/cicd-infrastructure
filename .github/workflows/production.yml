@@ -192,7 +192,7 @@ jobs:
         if: env.cicd_project_1 == 'true'
         uses: actions/github-script@v6
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{secrets.RELEASE_TOKEN}}
           script: |
             const cicdProject1Version = "v" + process.env.cicd_project_1_version;
             const cicdProject1Release = await github.rest.repos.createRelease({
@@ -220,7 +220,7 @@ jobs:
         if: env.cicd_project_2 == 'true'
         run: |
           echo "Deploy cicd-project-2 version ${{ env.cicd_project_2_version }} to production"
-      ## if cicd_project_2 is true, create a release using github api
+      ## if cicd_project_2 is true, create a release using oktokit github api
       - name: Create cicd-project-2 release
         if: env.cicd_project_2 == 'true'
         uses: actions/github-script@v6
