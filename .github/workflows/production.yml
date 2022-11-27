@@ -43,12 +43,19 @@ jobs:
         run: |
           echo "RC_RUN_NUMBER=${{ steps.get_latest_run_number.outputs.result }}" >> $GITHUB_ENV
       ## download artifact from RC_RUN_NUMBER, extract cicd-project-1 and cicd-project-2 checks and versions and set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version
-      ## artifact name is release-candidate-${{ env.RC_RUN_NUMBER }} and path is release-candidate.json
+      ## artifact name is release-candidate-${{ env.RC_RUN_NUMBER }} and unpack release-candidate.json from artifact
       - name: Download artifact from RC_RUN_NUMBER
         uses: actions/download-artifact@v3
         with:
           name: release-candidate-${{ env.RC_RUN_NUMBER }}
-          path: release-candidate.json
-      - name: log release-candidate.json
+          path: ./release-candidate
+      - name: Unpack release-candidate.json from artifact
         run: |
-          cat release-candidate.json
+          tar -xvf ./release-candidate/release-candidate-${{ env.RC_RUN_NUMBER }}.tar.gz
+      ## set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
+      - name: Set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version from release-candidate.json
+        run: |
+          echo "cicd_project_1=$(jq -r '.cicd_project_1' ./release-candidate.json)" >> $GITHUB_ENV
+          echo "cicd_project_2=$(jq -r '.cicd_project_2' ./release-candidate.json)" >> $GITHUB_ENV
+          echo "cicd_project_1_version=$(jq -r '.cicd_project_1_version' ./release-candidate.json)" >> $GITHUB_ENV
+          echo "cicd_project_2_version=$(jq -r '.cicd_project_2_version' ./release-candidate.json)" >> $GITHUB_ENV
