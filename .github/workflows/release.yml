@@ -88,7 +88,6 @@ jobs:
           name: cicd-project-1_v${{ env.cicd-project-1-version }}
           path: cicd-project-1
           repo: rexdefuror/cicd-project-1
-          branch: main
           search_artifacts: true
           if_no_artifact_found: fail
       - name: Display structure of downloaded files
@@ -106,7 +105,6 @@ jobs:
           name: cicd-project-2_v${{ env.cicd-project-2-version }}
           path: cicd-project-2
           repo: rexdefuror/cicd-project-2
-          branch: main
           search_artifacts: true
           if_no_artifact_found: fail
       ## if cicd-project-1 is included in the release, deploy cicd-project-1 to dev
@@ -175,7 +173,6 @@ jobs:
           name: cicd-project-1_v${{ env.cicd-project-1-version }}
           path: cicd-project-1
           repo: rexdefuror/cicd-project-1
-          branch: main
           search_artifacts: true
           if_no_artifact_found: fail
       ## if cicd-project-2 is included in the release, download cicd-project-2 artifact from cicd-project-2 repository
@@ -190,7 +187,6 @@ jobs:
           name: cicd-project-2_v${{ env.cicd-project-2-version }}
           path: cicd-project-2
           repo: rexdefuror/cicd-project-2
-          branch: main
           search_artifacts: true
           if_no_artifact_found: fail
       ## if cicd-project-1 is included in the release, deploy cicd-project-1 to qa
