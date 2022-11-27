@@ -45,10 +45,12 @@ jobs:
       ## download artifact from RC_RUN_NUMBER, extract cicd-project-1 and cicd-project-2 checks and versions and set cicd_project_1, cicd_project_2, cicd_project_1_version and cicd_project_2_version
       ## artifact name is release-candidate-${{ env.RC_RUN_NUMBER }} and unpack release-candidate.json from artifact
       - name: Download artifact from RC_RUN_NUMBER
-        uses: actions/download-artifact@v3
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: release.yml
+          run_id: ${{ env.RC_RUN_NUMBER }}
           name: release-candidate-${{ env.RC_RUN_NUMBER }}
-          path: ./release-candidate
+          path: ./release-candidate-${{ env.RC_RUN_NUMBER }}
       - name: Unpack release-candidate.json from artifact
         run: |
           tar -xvf ./release-candidate/release-candidate-${{ env.RC_RUN_NUMBER }}.tar.gz
