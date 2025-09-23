@@ -249,7 +249,7 @@ jobs:
         run: |
           echo '{"cicd_project_1": ${{ env.cicd-project-1 }}, "cicd_project_2": ${{ env.cicd-project-2 }}, "cicd_project_1_version": "${{ env.cicd-project-1-version }}", "cicd_project_2_version": "${{ env.cicd-project-2-version }}"}' > release-candidate.json
       - name: Upload release candidate json file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-candidate-${{ github.run_number }}
           path: release-candidate.json
